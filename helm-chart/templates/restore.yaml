@@ -1,0 +1,62 @@
+{{- if .Values.restore.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.restore.name }}
+  labels:
+    {{- include "mongodb-backup.labels" . | nindent 4 }}
+    app.kubernetes.io/component: restore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mongodb-backup.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: restore
+  template:
+    metadata:
+      {{- with .Values.restore.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mongodb-backup.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: restore
+    spec:
+      {{- include "mongodb-backup.images.pullSecrets" (dict "images" (list .Values.restore.image) "global" .Values.global) | nindent 6 }}
+      containers:
+        - name: {{ .Values.restore.name }}
+          image: {{ include "mongodb-backup.images.image" (dict "imageRoot" .Values.restore.image "global" .Values.global ) }}
+          imagePullPolicy: {{ .Values.restore.image.pullPolicy | default .Values.global.imagePullPolicy }}
+          env:
+            - name: SCRIPT_NAME
+              value: {{ .Values.restore.name }}
+            {{- range $key, $value := .Values.restore.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+            {{- end }}
+          volumeMounts:
+            - mountPath: /backup
+              name: restore-volume
+      volumes:
+        - name: restore-volume
+          {{- if .Values.restore.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.restore.existingClaim }}
+          {{- else }}
+          hostPath:
+            path: {{ .Values.restore.hostPath }}
+            type: Directory
+          {{- end }}
+      {{- with .Values.restore.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.restore.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.restore.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

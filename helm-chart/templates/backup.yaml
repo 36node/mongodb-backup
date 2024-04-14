@@ -1,0 +1,63 @@
+{{- if .Values.backup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.backup.name }}
+  labels:
+    {{- include "mongodb-backup.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+spec:
+  schedule: {{ .Values.backup.schedule }}
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          {{- with .Values.backup.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "mongodb-backup.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: backup
+        spec:
+          {{- include "mongodb-backup.images.pullSecrets" (dict "images" (list .Values.backup.image) "global" .Values.global) | nindent 10 }}
+          restartPolicy: Never
+          containers:
+            - name: {{ .Values.backup.name }}
+              image: {{ include "mongodb-backup.images.image" ( dict "imageRoot" .Values.backup.image "global" .Values.global ) }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default .Values.global.imagePullPolicy }}
+              env:
+                - name: SCRIPT_NAME
+                  value: {{ .Values.backup.name }}
+                {{- range $key, $value := .Values.backup.env }}
+                - name: "{{ $key }}"
+                  value: "{{ $value }}"
+                {{- end }}
+              volumeMounts:
+                - mountPath: /backup
+                  name: dump-volume
+          volumes:
+            - name: dump-volume
+              {{- if .Values.backup.existingClaim }}
+              persistentVolumeClaim:
+                claimName: {{ .Values.backup.existingClaim }}
+              {{- else }}
+              hostPath:
+                path: {{ .Values.backup.hostPath }}
+                type: Directory
+              {{- end }}
+          {{- with .Values.backup.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.backup.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.backup.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
