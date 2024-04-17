@@ -27,7 +27,7 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 支持 挂载磁盘 或 PVC，容器内的挂载路径默认为 `/backup`
 
 - 磁盘，指定 nodeSelector 及 hostPath
-- PVE，指定 existingClaim
+- PVC，指定 existingClaim
 
 ### 测试方法
 
@@ -46,9 +46,6 @@ docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
 docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
  -e MONGO_FILE_PREFIX=tmp -e BACKUP_LATEST_FILE="tmp.tar.gz" \
  -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main /app/restore.py
-
-docker ps -a
-docker exec -it xxx python3 /app/restore.py
 ```
 
 #### helm-chart
