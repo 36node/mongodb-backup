@@ -37,15 +37,15 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 docker pull 36node/mongodb-backup:main
 
 # backup
-docker run -e SCRIPT_NAME=backup -e MONGO_URI="mongodb://localhost" \
+docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
  -e MONGO_FILE_PREFIX=tmp -e BACKUP_LATEST_FILE="tmp.tar.gz" -e BACKUP_SAVE_NUMS=3 \
- -e MONGO_DB=test -e MONGO_COLLECTION=test \
- -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main
+ -e MONGO_DB=test -e MONGO_COLLECTION=roles \
+ -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main /app/backup.py
 
 # restore
-docker run -d -e SCRIPT_NAME=restore -e MONGO_URI="mongodb://localhost" \
+docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
  -e MONGO_FILE_PREFIX=tmp -e BACKUP_LATEST_FILE="tmp.tar.gz" \
- -v /Users/cc-mac/Downloads/mongodb/test:/backup cc3630/test:main
+ -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main /app/restore.py
 
 docker ps -a
 docker exec -it xxx python3 /app/restore.py

@@ -7,6 +7,8 @@ else
   if [ "$SCRIPT_NAME" = "backup" ]; then
     python3 backup.py
   else
-    sleep 120
+    while true; do
+      sleep 3600
+    done
   fi
 fi

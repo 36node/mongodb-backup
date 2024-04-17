@@ -47,7 +47,6 @@ def get_files():
             # 有密码备份文件为tar.gz.zip格式，无密码备份文件为tar.gz格式
             if (backup_pwd and file_name.endswith('.zip')) or (not backup_pwd and file_name.endswith('.tar.gz')):
                 if file_name.startswith(file_prefix) and file_name != latest_file_name:
-                    print(file_name)
                     temp_files.append({
                         "time": int(file_name.split('.')[0].split('-')[-1]),
                         "path": file_path,
