@@ -7,7 +7,7 @@ metadata:
     {{- include "mongodb-backup.labels" . | nindent 4 }}
     app.kubernetes.io/component: backup
 spec:
-  schedule: {{ .Values.backup.schedule }}
+  schedule: {{ .Values.backup.schedule | quote }}
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
   jobTemplate:

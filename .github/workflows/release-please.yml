@@ -75,4 +75,3 @@ jobs:
           registry: ${{ env.HARBOR_REGISTRY }}
           registry_username: "${{ secrets.HARBOR_USERNAME }}"
           registry_password: "${{ secrets.HARBOR_PASSWORD }}"
-          update_dependencies: "true"

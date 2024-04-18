@@ -92,8 +92,10 @@ restore:
 恢复
 
 ```shell
+## 启动一个容器用于执行恢复脚本
 kubectl -n mongodb-backup scale deployment restore --replicas=1
 
+## 查看这个容器启动的 pod
 kubectl -n mongodb-backup get pod
 
 # 选择适当的备份进行恢复
