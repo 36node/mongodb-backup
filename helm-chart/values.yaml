@@ -55,7 +55,7 @@ backup:
   image:
     registry: ""
     repository: 36node/mongodb-backup
-    tag: main
+    tag: latest
     digest: ""
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
@@ -125,7 +125,7 @@ restore:
   image:
     registry: ""
     repository: 36node/mongodb-backup
-    tag: main
+    tag: latest
     digest: ""
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
