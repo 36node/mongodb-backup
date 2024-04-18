@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/36node/mongodb-backup/compare/v1.3.1...v1.3.2) (2024-04-18)
+
+
+### Bug Fixes
+
+* docker image tag ([cafd82d](https://github.com/36node/mongodb-backup/commit/cafd82d6d5b2c34068d709b0185627675bb53c52))
+
 ## [1.3.1](https://github.com/36node/mongodb-backup/compare/v1.3.0...v1.3.1) (2024-04-18)
 
 
