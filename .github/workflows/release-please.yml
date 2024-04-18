@@ -36,7 +36,7 @@ jobs:
       - name: Get version tag
         id: get_tag
         # needs.release-please.outputs.tag_name = v1.0.0
-        run: echo ::set-output name=VERSION::$(echo "${{ needs.release-please.outputs.tag_name }}" | cut -c 1-)
+        run: echo ::set-output name=VERSION::$(echo "${{ needs.release-please.outputs.tag_name }}" | cut -c 2-)
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
