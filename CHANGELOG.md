@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/36node/mongodb-backup/compare/v1.2.0...v1.3.0) (2024-04-18)
+
+
+### Features
+
+* change a lot ([c1dfc34](https://github.com/36node/mongodb-backup/commit/c1dfc3401c73399a59fdc526afb11cf50df129b5))
+
 ## [1.2.0](https://github.com/36node/mongodb-backup/compare/v1.1.0...v1.2.0) (2024-04-18)
 
 
