@@ -8,14 +8,92 @@
 - 支持单集合备份
 - 支持忽略若干集合备份
 - 支持选择备份恢复
+- 支持加密备份
 
-### 使用
+## Quick Start
 
-使用 ansible 部署 helm-chart，按要求定时备份数据库
+支持三种方式使用
 
-#### 恢复
+- 命令行
+- docker
+- helm chart
+
+### 使用命令行
+
+全量数据库备份和恢复
 
 ```shell
+MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=xsjj python docker/backup.py
+MONGO_URI=mongodb://username:password@192.168.1.21 BACKUP_PATH=./backup python docker/restore.py
+```
+
+单个数据库备份和恢复
+
+```shell
+MONGO_URI=mongodb://username:password@192.168.1.20/some-db?authSource=admin BACKUP_PATH=./backup python docker/backup.py
+MONGO_URI=mongodb://username:password@192.168.1.21 BACKUP_PATH=./backup python docker/restore.py
+```
+
+备份时忽略某些集合
+
+```shell
+MONGO_URI=mongodb://localhost/some-db MONGO_EXCLUDE_COLLECTIONS=col_a,col_b BACKUP_PATH=./backup python docker/backup.py
+```
+
+### 使用 docker
+
+```shell
+# backup
+docker run -it --rm \
+  -e MONGO_URI="mongodb://localhost/some-db" \
+  -v ./some-dir:/backup \
+  36node/mongodb-backup
+
+# restore
+docker run -it --rm \
+  -e MONGO_URI="mongodb://localhost" \
+  -v ./some-dir:/backup \
+  36node/mongodb-backup \
+  /app/restore.py
+```
+
+### 使用 helm-chart
+
+```shell
+# 确保你的 helm 客户端支持 oci
+export HELM_EXPERIMENTAL_OCI=1
+
+# 安装
+helm -n mongodb-backup install mongodb-backup oci://harbor.36node.com/common/mongodb-backup:1.3.0 -f values.yaml
+```
+
+values 样例
+
+```yaml
+backup:
+  enabled: true
+  schedule: "0 0 * * *"
+  hostPath: /opt
+  nodeSelector:
+    kubernetes.io/hostname: "worker-1"
+  env:
+    MONGO_URI: "mongodb://localhost:27017/some-db"
+    FILE_PREFIX: xsjj
+    BACKUP_SAVE_NUMS: 3
+restore:
+  enabled: true
+  hostPath: /opt
+  nodeSelector:
+    kubernetes.io/hostname: "worker-1"
+  env:
+    MONGO_URI: "mongodb://localhost:27017"
+```
+
+恢复
+
+```shell
+kubectl -n mongodb-backup scale deployment restore --replicas=1
+
 kubectl -n mongodb-backup get pod
 
 # 选择适当的备份进行恢复
@@ -26,36 +104,33 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 
 支持 挂载磁盘 或 PVC，容器内的挂载路径默认为 `/backup`
 
-- 磁盘，指定 nodeSelector 及 hostPath
+- 本地磁盘，指定 nodeSelector 及 hostPath
 - PVC，指定 existingClaim
+- comming feature 支持 storage_class
 
-### 测试方法
+## 环境变量说明
 
-#### docker
+### backup
 
-```shell
-docker pull 36node/mongodb-backup:main
+- MONGO_URI: 必填，uri，例如 `mongodb://root:it_is_a_secret@mongodb-0.mongodb-headless/some-db?authSource=admin`
+- FILE_PREFIX: 选填，备份文件前缀，例如 fcp
+- BACKUP_SAVE_NUMS: 选填，备份保存数量，例如 3，默认保存 3 份
+- MONGO_COLLECTION: 选填，集合名称，不支持多个，例如 gantry，若不为空，则需保证 MONGO_DB 也存在
+- MONGO_EXCLUDE_COLLECTIONS: 选填，忽略的集合名称，支持多个，例如 test1,test2，若不为空，则需保证 MONGO_DB 也存在，且若 MONGO_COLLECTION 不为空，则忽略该参数
+- BACKUP_PWD: 选填，加密密码，备份文件可用 zip 加密
 
-# backup
-docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
- -e MONGO_FILE_PREFIX=tmp -e BACKUP_LATEST_FILE="tmp.tar.gz" -e BACKUP_SAVE_NUMS=3 \
- -e MONGO_DB=test -e MONGO_COLLECTION=roles \
- -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main /app/backup.py
+### restore
 
-# restore
-docker run -it --entrypoint "python3" -e MONGO_URI="mongodb://localhost" \
- -e MONGO_FILE_PREFIX=tmp -e BACKUP_LATEST_FILE="tmp.tar.gz" \
- -v ~/Downloads/mongodb/test:/backup 36node/mongodb-backup:main /app/restore.py
-```
+同 backup 的变量
 
-#### helm-chart
+- MONGO_URI
+- MONGO_FILE_PREFIX
+- BACKUP_LATEST_FILE
+- BACKUP_PWD
 
-```shell
-# 查看 yaml 文件
-helm install mongodb-backup ~/mongodb-backup/helm-chart -f values.yaml -n test --dry-run --debug
-```
+## Development
 
-#### 涉及命令说明
+开发相关的涉及命令
 
 ```shell
 # mongodump
@@ -73,126 +148,3 @@ docker build -t exmaple/mongodb-backup:main .
 docker push exmaple/mongodb-backup:main
 ```
 
-### 环境变量说明
-
-#### backup
-
-- MONGO_URI: 必填，uri，例如 mongodb://root:it_is_a_secret@mongodb-0.mongodb-headless
-- MONGO_FILE_PREFIX: 必填，备份文件前缀，例如 fcp
-- BACKUP_LATEST_FILE: 必填，最新备份文件名，例如 api.tar.gz
-- BACKUP_SAVE_NUMS: 非必填，备份保存数量，例如 3，默认保存 3 份
-- MONGO_DB: 非必填，数据库名称，例如 api，若为空，则备份所有数据库
-- MONGO_COLLECTION: 非必填，集合名称，不支持多个，例如 gantry，若不为空，则需保证 MONGO_DB 也存在
-- MONGO_EXCLUDE_COLLECTIONS: 非必填，忽略的集合名称，支持多个，例如 test1,test2，若不为空，则需保证 MONGO_DB 也存在，且若 MONGO_COLLECTION 不为空，则忽略该参数
-- BACKUP_PWD: 非必填，加密密码，备份文件可用 zip 加密
-
-#### restore
-
-同 backup 的变量
-
-- MONGO_URI
-- MONGO_FILE_PREFIX
-- BACKUP_LATEST_FILE
-- BACKUP_PWD
-
-### 样例
-
-#### 部署样例
-
-```yaml
-- name: deploy mongodb backup
-  hosts: localhost
-  gather_facts: false
-
-  environment:
-    K8S_AUTH_CONTEXT: "{{ cluster_name }}"
-
-  vars:
-    chart: ~/mongodb-backup/helm-chart
-    namespace: mongodb-backup
-
-    image_registry: harbor.example.com
-    image_repo: test/test
-    image_tag: main
-
-    mongo_uri: "mongodb://local:27017"
-    mongo_file_prefix: tmp
-    mongo_latest_file: tmp.tar.gz
-    mongo_backup_pwd: 123456
-    node_selector: "worker-1"
-
-  tasks:
-    - name: mongodb backup and restore
-      kubernetes.core.helm:
-        state: present
-        name: mongodb-backup
-        namespace: "{{ namespace }}"
-        create_namespace: true
-        chart_ref: "{{ chart }}"
-        values:
-          global:
-            imageRegistry: "{{ image_registry }}"
-          backup:
-            enabled: true
-            schedule: "0 0 * * *"
-            hostPath: /opt
-            nodeSelector:
-              kubernetes.io/hostname: "{{ node_selector}}"
-            image:
-              repository: "{{ image_repo }}"
-              tag: "{{ image_tag }}"
-            env:
-              MONGO_URI: "{{ mongo_uri }}"
-              MONGO_FILE_PREFIX: "{{ mongo_file_prefix }}"
-              BACKUP_LATEST_FILE: "{{ mongo_latest_file }}"
-              BACKUP_SAVE_NUMS: 3
-              MONGO_DB: test
-              MONGO_COLLECTION: test
-              BACKUP_PWD: "{{ mongo_backup_pwd }}"
-          restore:
-            enabled: true
-            hostPath: /opt
-            nodeSelector:
-              kubernetes.io/hostname: "{{ node_selector}}"
-            image:
-              repository: "{{ image_repo }}"
-              tag: "{{ image_tag }}"
-            env:
-              MONGO_URI: "{{ mongo_uri }}"
-              MONGO_FILE_PREFIX: "{{ mongo_file_prefix }}"
-              BACKUP_LATEST_FILE: "{{ mongo_latest_file }}"
-              BACKUP_PWD: "{{ mongo_backup_pwd }}"
-```
-
-#### helm values.yaml 样例
-
-```yaml
-global:
-  imageRegistry: "repo.com"
-backup:
-  enabled: true
-  schedule: "0 0 * * *"
-  hostPath: /opt
-  nodeSelector:
-    kubernetes.io/hostname: "worker-1"
-  image:
-    repository: test/test
-  env:
-    MONGO_URI: "mongodb://localhost:27017"
-    MONGO_FILE_PREFIX: tmp
-    BACKUP_LATEST_FILE: tmp.tar.gz
-    BACKUP_SAVE_NUMS: 3
-    MONGO_DB: test
-    MONGO_COLLECTION: test
-restore:
-  enabled: true
-  hostPath: /opt
-  nodeSelector:
-    kubernetes.io/hostname: "worker-1"
-  image:
-    repository: test/test
-  env:
-    MONGO_URI: "mongodb://localhost:27017"
-    MONGO_FILE_PREFIX: tmp
-    BACKUP_LATEST_FILE: tmp.tar.gz
-```

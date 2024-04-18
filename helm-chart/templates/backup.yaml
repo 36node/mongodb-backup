@@ -29,8 +29,6 @@ spec:
               image: {{ include "mongodb-backup.images.image" ( dict "imageRoot" .Values.backup.image "global" .Values.global ) }}
               imagePullPolicy: {{ .Values.backup.image.pullPolicy | default .Values.global.imagePullPolicy }}
               env:
-                - name: SCRIPT_NAME
-                  value: {{ .Values.backup.name }}
                 {{- range $key, $value := .Values.backup.env }}
                 - name: "{{ $key }}"
                   value: "{{ $value }}"
