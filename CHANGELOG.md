@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/36node/mongodb-backup/compare/v1.3.0...v1.3.1) (2024-04-18)
+
+
+### Bug Fixes
+
+* schedule quote ([277ef93](https://github.com/36node/mongodb-backup/commit/277ef9382d93ab0fd6c26979545ea72f8a36f3be))
+
 ## [1.3.0](https://github.com/36node/mongodb-backup/compare/v1.2.0...v1.3.0) (2024-04-18)
 
 
