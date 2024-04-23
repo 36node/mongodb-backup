@@ -12,7 +12,7 @@ env:
   DOCKER_IMAGE: 36node/mongodb-backup
   HARBOR_REGISTRY: harbor.36node.com
   HARBOR_REPO: common
-  CHART_NAME: mongodb-backup
+  CHART_NAME: mongodb-backup-chart
 
 jobs:
   release-please:
