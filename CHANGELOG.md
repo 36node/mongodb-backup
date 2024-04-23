@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/36node/mongodb-backup/compare/v1.3.3...v1.3.4) (2024-04-23)
+
+
+### Bug Fixes
+
+* chart name ([14fbf91](https://github.com/36node/mongodb-backup/commit/14fbf918120d0d711e3302982d630945ed5228c2))
+
 ## [1.3.3](https://github.com/36node/mongodb-backup/compare/v1.3.2...v1.3.3) (2024-04-23)
 
 
