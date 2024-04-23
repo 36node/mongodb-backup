@@ -64,7 +64,7 @@ docker run -it --rm \
 export HELM_EXPERIMENTAL_OCI=1
 
 # 安装
-helm -n mongodb-backup install mongodb-backup oci://harbor.36node.com/common/mongodb-backup:1.3.0 -f values.yaml
+helm -n mongodb-backup-chart install mongodb-backup oci://harbor.36node.com/common/mongodb-backup:1.3.0 -f values.yaml
 ```
 
 values 样例
