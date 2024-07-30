@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.7](https://github.com/36node/mongodb-backup/compare/v1.3.6...v1.3.7) (2024-07-30)
+
+
+### Bug Fixes
+
+* update to mongodb 5.0 ([6bdc972](https://github.com/36node/mongodb-backup/commit/6bdc9724d335314e63c36dfda76e257ff89de0a6))
+
 ## [1.3.6](https://github.com/36node/mongodb-backup/compare/v1.3.5...v1.3.6) (2024-07-30)
 
 
