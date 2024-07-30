@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.8](https://github.com/36node/mongodb-backup/compare/v1.3.7...v1.3.8) (2024-07-30)
+
+
+### Bug Fixes
+
+* restore default backup path ([7028e99](https://github.com/36node/mongodb-backup/commit/7028e998c5c08c139a626d984f16351cf03591c8))
+
 ## [1.3.7](https://github.com/36node/mongodb-backup/compare/v1.3.6...v1.3.7) (2024-07-30)
 
 
