@@ -14,6 +14,10 @@ env:
   HARBOR_REPO: common
   CHART_NAME: mongodb-backup-chart
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
