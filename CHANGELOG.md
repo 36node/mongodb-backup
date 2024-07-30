@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.6](https://github.com/36node/mongodb-backup/compare/v1.3.5...v1.3.6) (2024-07-30)
+
+
+### Bug Fixes
+
+* dockerfile gpg key ([d9f9165](https://github.com/36node/mongodb-backup/commit/d9f9165fb3bc5174b2da86d9266ff6d25c2be60c))
+
 ## [1.3.5](https://github.com/36node/mongodb-backup/compare/v1.3.4...v1.3.5) (2024-07-30)
 
 
