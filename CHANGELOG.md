@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.9](https://github.com/36node/mongodb-backup/compare/v1.3.8...v1.3.9) (2024-07-30)
+
+
+### Bug Fixes
+
+* common repo ([8be2407](https://github.com/36node/mongodb-backup/commit/8be2407cd22496c8565c11ec9981d6c33702018a))
+
 ## [1.3.8](https://github.com/36node/mongodb-backup/compare/v1.3.7...v1.3.8) (2024-07-30)
 
 
