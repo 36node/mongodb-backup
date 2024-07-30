@@ -11,7 +11,7 @@ env:
   DOCKER_PATH: ./docker
   DOCKER_IMAGE: 36node/mongodb-backup
   HARBOR_REGISTRY: harbor.36node.com
-  HARBOR_REPO: 36node
+  HARBOR_REPO: common
   CHART_NAME: mongodb-backup-chart
 
 jobs:
