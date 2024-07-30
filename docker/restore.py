@@ -7,7 +7,6 @@ import subprocess
 # 数据库还原
 
 DEFAULT_BACKUP_PATH = "/backup"
-DEFAULT_BACKUP_SAVE_NUMS = 3
 
 must_inputs = ["MONGO_URI"]
 other_inputs = [
@@ -32,7 +31,7 @@ def check_var(key):
 uri = os.environ["MONGO_URI"]
 
 # 选填
-backup_path = os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else BACKUP_PATH
+backup_path = os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
 backup_pwd = os.environ["BACKUP_PWD"] if check_var("BACKUP_PWD") else None
 
 date = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
