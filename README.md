@@ -23,15 +23,29 @@
 全量数据库备份和恢复
 
 ```shell
-MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=xsjj python docker/backup.py
+# 使用文件备份
+MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=tmp python docker/backup.py
+# 启用 s3 备份
+MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=tmp S3_ENABLE=1 S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/backup.py
+
+# 使用文件恢复
 MONGO_URI=mongodb://username:password@192.168.1.21 BACKUP_PATH=./backup python docker/restore.py
+# 使用 s3 恢复
+MONGO_URI=mongodb://username:password@192.168.1.21 RESTORE_FROM_S3=1 S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/restore.py
 ```
 
 单个数据库备份和恢复
 
 ```shell
+# 使用文件备份
 MONGO_URI=mongodb://username:password@192.168.1.20/some-db?authSource=admin BACKUP_PATH=./backup python docker/backup.py
-MONGO_URI=mongodb://username:password@192.168.1.21 BACKUP_PATH=./backup python docker/restore.py
+# 启用 s3 备份
+MONGO_URI=mongodb://username:password@192.168.1.20/some-db?authSource=admin BACKUP_PATH=./backup FILE_PREFIX=tmp S3_ENABLE=1 S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/backup.py
+
+# 使用文件恢复
+MONGO_URI=mongodb://username:password@192.168.1.21/some-db?authSource=admin BACKUP_PATH=./backup python docker/restore.py
+# 使用 s3 恢复
+MONGO_URI=mongodb://username:password@192.168.1.21/some-db?authSource=admin RESTORE_FROM_S3=1 S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/restore.py
 ```
 
 备份时忽略某些集合
@@ -121,7 +135,16 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 - MONGO_EXCLUDE_COLLECTIONS: 选填，忽略的集合名称，支持多个，例如 test1,test2，若不为空，则需保证 MONGO_DB 也存在，且若 MONGO_COLLECTION 不为空，则忽略该参数
 - BACKUP_PWD: 选填，加密密码，备份文件可用 zip 加密
 
+- S3_ENABLE: 选填，是否启用 S3 存储备份，不为空值即认为启用，例如 1 视为启用 S3
+- S3_EP: 选填，S3 url，例如 https://minio-api.36node.com
+- S3_ACCESS_KEY: 选填，S3 access key
+- S3_ACCESS_SECRET: 选填，S3 access secret
+- S3_BUCKET: 选填，要存储的桶名
+- S3_PREFIX: 选填，要存储的前缀
+
 ### restore
+
+- RESTORE_FROM_S3: 选填，是否从 S3 中进行恢复，不为空值即认为启用，例如 1 视为从 S3 中进行恢复
 
 同 backup 的变量
 
@@ -129,6 +152,12 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 - MONGO_FILE_PREFIX
 - BACKUP_LATEST_FILE
 - BACKUP_PWD
+
+- S3_EP
+- S3_ACCESS_KEY
+- S3_ACCESS_SECRET
+- S3_BUCKET
+- S3_PREFIX
 
 ## Development
 

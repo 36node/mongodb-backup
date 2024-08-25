@@ -3,16 +3,19 @@ import re
 import sys
 from datetime import datetime, timedelta
 import subprocess
-import shutil
 from urllib.parse import urlparse
+import boto3
 
 # 数据库清理备份脚本
-# 1. 清理备份，保留最近的若干份
-# 2. 按要求备份数据，并保存最终备份
+# 1. 按要求备份数据，并保存到指定路径
+# 2. 清理备份，保留最近的若干份
+# 3. 将备份文件上传到 S3，并清理 S3 上的多余备份文件
 
 DEFAULT_FILE_PREFIX = ""
 DEFAULT_BACKUP_PATH = "/backup"
 DEFAULT_BACKUP_SAVE_NUMS = 3
+
+DEFAULT_S3_PREFIX = ""
 
 must_inputs = ["MONGO_URI"]
 other_inputs = [
@@ -22,6 +25,13 @@ other_inputs = [
     "MONGO_COLLECTION",
     "MONGO_EXCLUDE_COLLECTIONS",
     "BACKUP_PWD",
+
+    "S3_ENABLE",
+    "S3_EP",
+    "S3_ACCESS_KEY",
+    "S3_ACCESS_SECRET",
+    "S3_BUCKET",
+    "S3_PREFIX",
 ]
 
 for key in must_inputs:
@@ -48,6 +58,13 @@ excludeCollections = (
     os.environ["MONGO_EXCLUDE_COLLECTIONS"].split(",") if check_var("MONGO_EXCLUDE_COLLECTIONS") else None
 )
 backup_pwd = os.environ["BACKUP_PWD"] if check_var("BACKUP_PWD") else None
+
+s3_enable = True if check_var("S3_ENABLE") else False
+s3_ep = os.environ["S3_EP"] if check_var("S3_EP") else None
+s3_access_key = os.environ["S3_ACCESS_KEY"] if check_var("S3_ACCESS_KEY") else None
+s3_access_secret = os.environ["S3_ACCESS_SECRET"] if check_var("S3_ACCESS_SECRET") else None
+s3_bucket = os.environ["S3_BUCKET"] if check_var("S3_BUCKET") else None
+s3_prefix = os.environ["S3_PREFIX"] if check_var("S3_PREFIX") else DEFAULT_S3_PREFIX
 
 # 计算当前日期，按照 年月日时分 格式
 date = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
@@ -131,8 +148,42 @@ def backup_file(prefix):
         source = f"{backup_path}/{backup_file_name}"
         subprocess.call(f"zip -e {source}.crypt -P {backup_pwd} {source}", shell=True)
         os.remove(source)
-    print("backup end")
 
+def upload_s3(prefix):
+    client = boto3.client(
+        "s3",
+        endpoint_url=s3_ep,
+        aws_access_key_id=s3_access_key,
+        aws_secret_access_key=s3_access_secret,
+    )
+
+    # 上传备份文件
+    file_name = f"{prefix}{date}.tar.gz.crypt" if backup_pwd else f"{prefix}{date}.tar.gz"
+    upload_path = f"{s3_prefix}/{file_name}" if s3_prefix else file_name
+    client.upload_file(f"{backup_path}/{file_name}", s3_bucket, upload_path)
+
+    # 清理 S3 上的多余备份文件
+    list_prefix = f"{s3_prefix}/" if s3_prefix else ""
+    resp = client.list_objects_v2(Bucket=s3_bucket, Prefix=list_prefix, Delimiter='/')
+    if "Contents" in resp:
+        objects = resp["Contents"]
+
+        file_prefix = f"{list_prefix}{prefix}"
+        # 构造正则表达式
+        regex_pattern = f"^{re.escape(file_prefix)}(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
+        compiled_regex = re.compile(regex_pattern)
+        keys = [object["Key"] for object in objects if compiled_regex.match(object["Key"])]
+
+        # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
+        keys.sort()
+
+        # 确定需要删除的文件（保留最后N个文件，这里是backup_save_nums）
+        keys_to_remove = keys[:-backup_save_nums]
+
+        # 删除旧的备份文件
+        if keys_to_remove:
+            client.delete_objects(Bucket=s3_bucket, Delete={"Objects": [{"Key": key} for key in keys_to_remove]})
+            print(f"Deleted s3 old backup files: {keys_to_remove}")
 
 try:
     if not os.path.exists(backup_path):
@@ -144,13 +195,18 @@ try:
     final_prefix = calculate_file_prefix(db, collection, file_prefix)
     print("final_prefix: ", final_prefix)
 
-    # 1. 按要求备份数据
+    # 1. 按要求备份数据，并保存到指定路径
     backup_file(final_prefix)
     print("backup end")
 
-    # 1. 清理备份，保留最近的若干份
+    # 2. 清理备份，保留最近的若干份
     cleanup_files(final_prefix)
     print("cleanup end")
+
+    if s3_enable:
+        # 3. 将备份文件上传到 S3，并清理 S3 上的多余备份文件
+        upload_s3(final_prefix)
+        print("upload s3 end")
 
     print("script end")
 
