@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/36node/mongodb-backup/compare/v1.3.9...v1.4.0) (2024-08-27)
+
+
+### Features
+
+* backup&restore with s3 ([920ca0a](https://github.com/36node/mongodb-backup/commit/920ca0a59e585f37702273e403caeab0e392fed7))
+* 增加 s3 存储的支持 ([#15](https://github.com/36node/mongodb-backup/issues/15)) ([920ca0a](https://github.com/36node/mongodb-backup/commit/920ca0a59e585f37702273e403caeab0e392fed7))
+
+
+### Bug Fixes
+
+* docker build ([00eb731](https://github.com/36node/mongodb-backup/commit/00eb731eab61420e4144b065e85cf528c5108eda))
+
 ## [1.3.9](https://github.com/36node/mongodb-backup/compare/v1.3.8...v1.3.9) (2024-07-30)
 
 
