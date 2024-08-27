@@ -3,16 +3,26 @@ import re
 import sys
 from datetime import datetime, timedelta
 import subprocess
+import boto3
 
 # 数据库还原
 
 DEFAULT_BACKUP_PATH = "/backup"
+
+DEFAULT_S3_PREFIX = ""
 
 must_inputs = ["MONGO_URI"]
 other_inputs = [
     "FILE_PREFIX",
     "BACKUP_PATH",
     "BACKUP_PWD",
+
+    "RESTORE_FROM_S3",
+    "S3_EP",
+    "S3_ACCESS_KEY",
+    "S3_ACCESS_SECRET",
+    "S3_BUCKET",
+    "S3_PREFIX",
 ]
 
 for key in must_inputs:
@@ -34,14 +44,17 @@ uri = os.environ["MONGO_URI"]
 backup_path = os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
 backup_pwd = os.environ["BACKUP_PWD"] if check_var("BACKUP_PWD") else None
 
+restore_from_s3 = True if check_var("RESTORE_FROM_S3") else False
+s3_ep = os.environ["S3_EP"] if check_var("S3_EP") else None
+s3_access_key = os.environ["S3_ACCESS_KEY"] if check_var("S3_ACCESS_KEY") else None
+s3_access_secret = os.environ["S3_ACCESS_SECRET"] if check_var("S3_ACCESS_SECRET") else None
+s3_bucket = os.environ["S3_BUCKET"] if check_var("S3_BUCKET") else None
+s3_prefix = os.environ["S3_PREFIX"] if check_var("S3_PREFIX") else DEFAULT_S3_PREFIX
+
 date = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
 
 
-def get_files():
-    # 构造正则表达式
-    regex_pattern = f"^.*(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
-    compiled_regex = re.compile(regex_pattern)
-
+def get_files(compiled_regex):
     # 列出备份文件夹中所有的文件
     all_files = os.listdir(backup_path)
 
@@ -51,6 +64,27 @@ def get_files():
     # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
     matched_files.sort(reverse=True)
     return matched_files
+
+def get_keys_from_s3(client, compiled_regex):
+    list_prefix = f"{s3_prefix}/" if s3_prefix else ""
+    resp = client.list_objects_v2(Bucket=s3_bucket, Prefix=list_prefix, Delimiter='/')
+    if "Contents" in resp:
+        objects = resp["Contents"]
+
+        keys = [object["Key"] for object in objects if compiled_regex.match(object["Key"])]
+
+        if keys:
+            # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
+            keys.sort(reverse=True)
+            return keys
+    raise Exception("没有可用的备份")
+
+def download_file(client, key):
+    file_name = os.path.basename(key)
+    save_path = f"/tmp/{file_name}"
+    client.download_file(s3_bucket, key, save_path)
+    return save_path
+    
 
 
 def restore_file(file_path):
@@ -77,16 +111,39 @@ def restore_file(file_path):
 
 
 try:
+    # 构造正则表达式
+    regex_pattern = f"^.*(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
+    compiled_regex = re.compile(regex_pattern)
+
+    client = None
     # 1. 获取备份文件列表
-    backup_files = get_files()
+    if restore_from_s3:
+        client = boto3.client(
+            "s3",
+            endpoint_url=s3_ep,
+            aws_access_key_id=s3_access_key,
+            aws_secret_access_key=s3_access_secret,
+        )
+        backup_files = get_keys_from_s3(client, compiled_regex)
+    else:
+      backup_files = get_files(compiled_regex)
 
     input_cmd = "请选择要还原的备份文件：\n"
     for index, item in enumerate(backup_files):
         input_cmd += f"{index + 1}. {item}\n"
     value = input(input_cmd)
-    file = f"{backup_path}/{backup_files[int(value) - 1]}"
+
+    if restore_from_s3:
+        # 需要下载文件
+        file = download_file(client, backup_files[int(value) - 1])
+    else:
+        file = f"{backup_path}/{backup_files[int(value) - 1]}"
 
     restore_file(file)
+
+    if restore_from_s3:
+        # 删除临时文件
+        os.remove(file)
 
     print("script end")
 except Exception as e:

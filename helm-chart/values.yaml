@@ -51,6 +51,12 @@ backup:
     ## MONGO_COLLECTION:
     ## MONGO_EXCLUDE_COLLECTIONS:
     ## BACKUP_PWD:
+    ## S3_ENABLE:
+    ## S3_EP:
+    ## S3_ACCESS_KEY:
+    ## S3_ACCESS_SECRET:
+    ## S3_BUCKET:
+    ## S3_PREFIX:
 
   image:
     registry: ""
@@ -121,6 +127,12 @@ restore:
     ## 选填
     ## BACKUP_PATH:
     ## BACKUP_PWD:
+    ## RESTORE_FROM_S3:
+    ## S3_EP:
+    ## S3_ACCESS_KEY:
+    ## S3_ACCESS_SECRET:
+    ## S3_BUCKET:
+    ## S3_PREFIX:
 
   image:
     registry: ""
