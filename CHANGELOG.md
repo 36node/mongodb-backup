@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/36node/mongodb-backup/compare/v1.4.0...v1.4.1) (2024-08-28)
+
+
+### Bug Fixes
+
+* helm-chart with s3 ([d9ff6f8](https://github.com/36node/mongodb-backup/commit/d9ff6f8165a95403e55dc0c98af32da125c49e37))
+
 ## [1.4.0](https://github.com/36node/mongodb-backup/compare/v1.3.9...v1.4.0) (2024-08-27)
 
 
