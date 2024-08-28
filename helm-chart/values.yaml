@@ -23,6 +23,22 @@ global:
 nameOverride: ""
 fullnameOverride: ""
 
+## storage
+storage:
+  ## 三种类型选一种 hostPath/existingClaim/s3
+  type: "hostPath"
+  hostPath: "/backup"
+  existingClaim: ""
+
+  ## s3 配置
+  # s3:
+  #   endpoint: "https://minio-api.36node.com"
+  #   access_key: "xxxxxxxxxxxxx"
+  #   access_secret: "yyyyyyyyyyyy"
+  #   bucket: "some"
+  #   prefix: "aaa-"
+  s3: {}
+
 ## @section backup
 ##
 backup:
@@ -30,11 +46,6 @@ backup:
   enabled: true
 
   schedule: ""
-
-  # existingClaim 和 nodeSelector 至少有一个
-  existingClaim: ""
-
-  hostPath: ""
 
   ## env
   env:
@@ -110,11 +121,6 @@ backup:
 restore:
   name: restore
   enabled: true
-
-  # existingClaim 和 nodeSelector 至少有一个
-  existingClaim: ""
-
-  hostPath: ""
 
   ## env
   env:
