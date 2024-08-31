@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import subprocess
 from urllib.parse import urlparse
 import boto3
+from botocore.client import Config
 
 # 数据库清理备份脚本
 # 1. 按要求备份数据，并保存到指定路径
@@ -25,11 +26,13 @@ other_inputs = [
     "MONGO_COLLECTION",
     "MONGO_EXCLUDE_COLLECTIONS",
     "BACKUP_PWD",
-
+    # S3 CONFIG
     "S3_ENABLE",
     "S3_EP",
+    "S3_EP_VIRTUAL",
     "S3_ACCESS_KEY",
     "S3_ACCESS_SECRET",
+    "S3_REGION",
     "S3_BUCKET",
     "S3_PREFIX",
 ]
@@ -46,25 +49,45 @@ def check_var(key):
     return False
 
 
+def check_bool(key):
+    if os.environ[key].lower() == "true":
+        return True
+    return False
+
+
 # 必填
 uri = os.environ["MONGO_URI"]
 
 # 选填
-file_prefix = os.environ["FILE_PREFIX"] if check_var("FILE_PREFIX") else DEFAULT_FILE_PREFIX
-backup_path = os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
-backup_save_nums = int(os.environ["BACKUP_SAVE_NUMS"]) if check_var("BACKUP_SAVE_NUMS") else DEFAULT_BACKUP_SAVE_NUMS
+file_prefix = (
+    os.environ["FILE_PREFIX"] if check_var("FILE_PREFIX") else DEFAULT_FILE_PREFIX
+)
+backup_path = (
+    os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
+)
+backup_save_nums = (
+    int(os.environ["BACKUP_SAVE_NUMS"])
+    if check_var("BACKUP_SAVE_NUMS")
+    else DEFAULT_BACKUP_SAVE_NUMS
+)
 collection = os.environ["MONGO_COLLECTION"] if check_var("MONGO_COLLECTION") else None
 excludeCollections = (
-    os.environ["MONGO_EXCLUDE_COLLECTIONS"].split(",") if check_var("MONGO_EXCLUDE_COLLECTIONS") else None
+    os.environ["MONGO_EXCLUDE_COLLECTIONS"].split(",")
+    if check_var("MONGO_EXCLUDE_COLLECTIONS")
+    else None
 )
 backup_pwd = os.environ["BACKUP_PWD"] if check_var("BACKUP_PWD") else None
 
-s3_enable = True if check_var("S3_ENABLE") else False
+s3_enable = check_bool("S3_ENABLE") if check_var("S3_ENABLE") else False
 s3_ep = os.environ["S3_EP"] if check_var("S3_EP") else None
+s3_ep_virtual = check_bool("S3_EP_VIRTUAL") if check_var("S3_EP_VIRTUAL") else False
 s3_access_key = os.environ["S3_ACCESS_KEY"] if check_var("S3_ACCESS_KEY") else None
-s3_access_secret = os.environ["S3_ACCESS_SECRET"] if check_var("S3_ACCESS_SECRET") else None
+s3_access_secret = (
+    os.environ["S3_ACCESS_SECRET"] if check_var("S3_ACCESS_SECRET") else None
+)
 s3_bucket = os.environ["S3_BUCKET"] if check_var("S3_BUCKET") else None
 s3_prefix = os.environ["S3_PREFIX"] if check_var("S3_PREFIX") else DEFAULT_S3_PREFIX
+s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
 
 # 计算当前日期，按照 年月日时分 格式
 date = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
@@ -149,22 +172,36 @@ def backup_file(prefix):
         subprocess.call(f"zip -e {source}.crypt -P {backup_pwd} {source}", shell=True)
         os.remove(source)
 
+
 def upload_s3(prefix):
+    # config
+    config_s3 = {}
+    if s3_ep_virtual:
+        config_s3["addressing_style"] = "virtual"
+
+    if s3_region:
+        config = Config(s3=config_s3, region_name=s3_region)
+    else:
+        config = Config(s3=config_s3)
+
     client = boto3.client(
         "s3",
         endpoint_url=s3_ep,
         aws_access_key_id=s3_access_key,
         aws_secret_access_key=s3_access_secret,
+        config=config,
     )
 
     # 上传备份文件
-    file_name = f"{prefix}{date}.tar.gz.crypt" if backup_pwd else f"{prefix}{date}.tar.gz"
+    file_name = (
+        f"{prefix}{date}.tar.gz.crypt" if backup_pwd else f"{prefix}{date}.tar.gz"
+    )
     upload_path = f"{s3_prefix}/{file_name}" if s3_prefix else file_name
     client.upload_file(f"{backup_path}/{file_name}", s3_bucket, upload_path)
 
     # 清理 S3 上的多余备份文件
     list_prefix = f"{s3_prefix}/" if s3_prefix else ""
-    resp = client.list_objects_v2(Bucket=s3_bucket, Prefix=list_prefix, Delimiter='/')
+    resp = client.list_objects_v2(Bucket=s3_bucket, Prefix=list_prefix, Delimiter="/")
     if "Contents" in resp:
         objects = resp["Contents"]
 
@@ -172,7 +209,9 @@ def upload_s3(prefix):
         # 构造正则表达式
         regex_pattern = f"^{re.escape(file_prefix)}(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
         compiled_regex = re.compile(regex_pattern)
-        keys = [object["Key"] for object in objects if compiled_regex.match(object["Key"])]
+        keys = [
+            object["Key"] for object in objects if compiled_regex.match(object["Key"])
+        ]
 
         # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
         keys.sort()
@@ -182,8 +221,12 @@ def upload_s3(prefix):
 
         # 删除旧的备份文件
         if keys_to_remove:
-            client.delete_objects(Bucket=s3_bucket, Delete={"Objects": [{"Key": key} for key in keys_to_remove]})
+            client.delete_objects(
+                Bucket=s3_bucket,
+                Delete={"Objects": [{"Key": key} for key in keys_to_remove]},
+            )
             print(f"Deleted s3 old backup files: {keys_to_remove}")
+
 
 try:
     if not os.path.exists(backup_path):

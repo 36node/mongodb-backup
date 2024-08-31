@@ -33,8 +33,10 @@ storage:
   ## s3 配置
   # s3:
   #   endpoint: "https://minio-api.36node.com"
+  #   endpoint_virtual: true # 是否使用虚拟host，即把 bucker 作为域名
   #   access_key: "xxxxxxxxxxxxx"
   #   access_secret: "yyyyyyyyyyyy"
+  #   region: "cn"
   #   bucket: "some"
   #   prefix: "aaa-"
   s3: {}
@@ -62,12 +64,6 @@ backup:
     ## MONGO_COLLECTION:
     ## MONGO_EXCLUDE_COLLECTIONS:
     ## BACKUP_PWD:
-    ## S3_ENABLE:
-    ## S3_EP:
-    ## S3_ACCESS_KEY:
-    ## S3_ACCESS_SECRET:
-    ## S3_BUCKET:
-    ## S3_PREFIX:
 
   image:
     registry: ""
@@ -133,12 +129,6 @@ restore:
     ## 选填
     ## BACKUP_PATH:
     ## BACKUP_PWD:
-    ## RESTORE_FROM_S3:
-    ## S3_EP:
-    ## S3_ACCESS_KEY:
-    ## S3_ACCESS_SECRET:
-    ## S3_BUCKET:
-    ## S3_PREFIX:
 
   image:
     registry: ""

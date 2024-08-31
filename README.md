@@ -26,7 +26,7 @@
 # 使用文件备份
 MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=tmp python docker/backup.py
 # 启用 s3 备份
-MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=tmp S3_ENABLE=1 S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/backup.py
+MONGO_URI=mongodb://username:password@192.168.1.20 BACKUP_PATH=./backup FILE_PREFIX=tmp S3_ENABLE=true S3_EP="https://minio-api.36node.com" S3_ACCESS_KEY="xxxx" S3_ACCESS_SECRET="xxxx" S3_BUCKET="test" S3_PREFIX="prefix" python docker/backup.py
 
 # 使用文件恢复
 MONGO_URI=mongodb://username:password@192.168.1.21 BACKUP_PATH=./backup python docker/restore.py
@@ -116,13 +116,20 @@ kubectl -n mongodb-backup get pod
 kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 ```
 
-#### 存储
+### 存储
 
 支持 挂载磁盘 或 PVC，容器内的挂载路径默认为 `/backup`
 
 - 本地磁盘，指定 nodeSelector 及 hostPath
 - PVC，指定 existingClaim
 - comming feature 支持 storage_class
+
+### 关于 S3 endpoint 的说明
+
+S3 支持使用虚拟域名作为endpoint，即可以将 region 或者 bucket 放入域名中使用，不同的 S3 配置会略有不同，需进行测试。其他配置，可参考[boto3文档](https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html)
+
+- 36node 自建 minio，使用默认配置即可
+- xxx.aliyuncs.com，需要设置 S3_EP_VIRTUAL 为 true
 
 ## 环境变量说明
 
@@ -135,16 +142,18 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 - MONGO_EXCLUDE_COLLECTIONS: 选填，忽略的集合名称，支持多个，例如 test1,test2，若不为空，则需保证 MONGO_DB 也存在，且若 MONGO_COLLECTION 不为空，则忽略该参数
 - BACKUP_PWD: 选填，加密密码，备份文件可用 zip 加密
 
-- S3_ENABLE: 选填，是否启用 S3 存储备份，不为空值即认为启用，例如 1 视为启用 S3
+- S3_ENABLE: 选填，是否启用 S3 存储备份，true 表示启用
 - S3_EP: 选填，S3 url，例如 https://minio-api.36node.com
+- S3_EP_VIRTUAL: 选填，是否启用虚拟 host url，true 表示启用
 - S3_ACCESS_KEY: 选填，S3 access key
 - S3_ACCESS_SECRET: 选填，S3 access secret
+- S3_REGION: 选填，地区名
 - S3_BUCKET: 选填，要存储的桶名
 - S3_PREFIX: 选填，要存储的前缀
 
 ### restore
 
-- RESTORE_FROM_S3: 选填，是否从 S3 中进行恢复，不为空值即认为启用，例如 1 视为从 S3 中进行恢复
+- S3_ENABLE: 选填，是否从 S3 中进行恢复，true 表示启用
 
 同 backup 的变量
 
@@ -154,8 +163,10 @@ kubectl -n mongodb-backup exec -it restore-xxx-xxx -- python3 /app/restore.py
 - BACKUP_PWD
 
 - S3_EP
+- S3_EP_VIRTUAL
 - S3_ACCESS_KEY
 - S3_ACCESS_SECRET
+- S3_REGION
 - S3_BUCKET
 - S3_PREFIX
 
