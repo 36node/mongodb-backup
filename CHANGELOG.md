@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/36node/mongodb-backup/compare/v1.4.1...v1.4.2) (2024-08-31)
+
+
+### Bug Fixes
+
+* virtual host url ([08c975e](https://github.com/36node/mongodb-backup/commit/08c975e4da76767c2783041dd3fb8a82be4fa395))
+
 ## [1.4.1](https://github.com/36node/mongodb-backup/compare/v1.4.0...v1.4.1) (2024-08-28)
 
 
