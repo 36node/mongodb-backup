@@ -48,9 +48,10 @@ spec:
             - name: "S3_PREFIX"
               value: {{ index .Values.storage.s3 "prefix" | quote }}
             {{- end }}
-            {{- range $key, $value := .Values.restore.env }}
+            {{- $env := .Values.backup.env }}
+            {{- range $key := $env | keys | sortAlpha }}
             - name: "{{ $key }}"
-              value: "{{ $value }}"
+              value: "{{ index $env $key }}"
             {{- end }}
           {{- if not (eq .Values.storage.type "s3") }}
           volumeMounts:
