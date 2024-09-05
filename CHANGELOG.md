@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/36node/mongodb-backup/compare/v1.4.2...v1.4.3) (2024-09-05)
+
+
+### Bug Fixes
+
+* env order ([064203b](https://github.com/36node/mongodb-backup/commit/064203bf66c8fd4b36f5f6bcad96795256575891))
+
 ## [1.4.2](https://github.com/36node/mongodb-backup/compare/v1.4.1...v1.4.2) (2024-08-31)
 
 
