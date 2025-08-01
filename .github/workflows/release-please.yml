@@ -10,7 +10,6 @@ permissions: write-all
 env:
   DOCKER_PATH: ./docker
   DOCKER_IMAGE: 36node/mongodb-backup
-  HARBOR_REGISTRY: harbor.36node.com
   HARBOR_REPO: common
   CHART_NAME: mongodb-backup-chart
 
@@ -25,7 +24,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: google-github-actions/release-please-action@v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           release-type: simple
@@ -40,7 +39,7 @@ jobs:
       - name: Get version tag
         id: get_tag
         # needs.release-please.outputs.tag_name = v1.0.0
-        run: echo ::set-output name=VERSION::$(echo "${{ needs.release-please.outputs.tag_name }}" | cut -c 2-)
+        run: echo "VERSION=$(echo "${{ needs.release-please.outputs.tag_name }}" | cut -c 2-)" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -69,13 +68,12 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Chart package and push
-        uses: appany/helm-oci-chart-releaser@v0.3.0
+        uses: appany/helm-oci-chart-releaser@v0.5.0
         with:
           name: ${{ env.CHART_NAME }}
           repository: ${{ env.HARBOR_REPO }}
-          # v1.0.0 -> 1.0.0
-          tag: $(echo "${{ steps.get_tag.outputs.VERSION }}" | sed 's/v\([0-9.]*\).*/\1/')
+          tag: ${{ steps.get_tag.outputs.VERSION }}
           path: helm-chart
-          registry: ${{ env.HARBOR_REGISTRY }}
+          registry: ${{ secrets.HARBOR_DOMAIN }}
           registry_username: "${{ secrets.HARBOR_USERNAME }}"
           registry_password: "${{ secrets.HARBOR_PASSWORD }}"
