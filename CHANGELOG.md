@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/36node/mongodb-backup/compare/v1.5.0...v1.5.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* helm chart ([085f1e7](https://github.com/36node/mongodb-backup/commit/085f1e7ca36c7517e2c61c912e6014ef46b31776))
+
 ## [1.5.0](https://github.com/36node/mongodb-backup/compare/v1.4.3...v1.5.0) (2025-08-01)
 
 
