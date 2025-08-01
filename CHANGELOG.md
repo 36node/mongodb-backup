@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/36node/mongodb-backup/compare/v1.4.3...v1.5.0) (2025-08-01)
+
+
+### Features
+
+* update ci ([560223c](https://github.com/36node/mongodb-backup/commit/560223cc7a346973fc96da276852bd7d153f0bec))
+
 ## [1.4.3](https://github.com/36node/mongodb-backup/compare/v1.4.2...v1.4.3) (2024-09-05)
 
 
