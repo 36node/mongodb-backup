@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.4](https://github.com/36node/mongodb-backup/compare/v1.6.3...v1.6.4) (2025-08-06)
+
+
+### Bug Fixes
+
+* remove unuse file ([0e775ac](https://github.com/36node/mongodb-backup/commit/0e775ac7991da8925a9a829d0513d25ffe25a923))
+* s3 delete ([7a8d9aa](https://github.com/36node/mongodb-backup/commit/7a8d9aa43db4aa619790528cc9b810a89a55e455))
+
 ## [1.6.3](https://github.com/36node/mongodb-backup/compare/v1.6.2...v1.6.3) (2025-08-06)
 
 
