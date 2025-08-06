@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 import sys
@@ -6,7 +7,7 @@ import subprocess
 from urllib.parse import urlparse
 import boto3
 from botocore.client import Config
-import requests
+import time
 
 # 数据库清理备份脚本
 # 1. 按要求备份数据，并保存到指定路径
@@ -89,13 +90,16 @@ s3_access_secret = (
 s3_bucket = os.environ["S3_BUCKET"] if check_var("S3_BUCKET") else None
 s3_prefix = os.environ["S3_PREFIX"] if check_var("S3_PREFIX") else DEFAULT_S3_PREFIX
 s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
-s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
 s3_signature_version = (
     os.environ["S3_SIGNATURE_VERSION"] if check_var("S3_SIGNATURE_VERSION") else None
 )
 
 # 计算当前日期，按照 年月日时分 格式
-date = (datetime.now() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
+date = (
+    datetime.now() + timedelta(hours=8)
+    if not time.localtime().tm_gmtoff
+    else datetime.now()
+).strftime("%Y%m%d%H%M%S")
 
 
 def get_dbname_from_mongo_uri(uri):
@@ -185,7 +189,9 @@ def upload_s3(prefix):
         config_s3["addressing_style"] = "virtual"
 
     if s3_region and s3_signature_version:
-        config = Config(s3=config_s3, signature_version="s3", region_name=s3_region)
+        config = Config(
+            s3=config_s3, signature_version=s3_signature_version, region_name=s3_region
+        )
     elif s3_region:
         config = Config(s3=config_s3, region_name=s3_region)
     elif s3_signature_version:
