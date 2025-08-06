@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.3](https://github.com/36node/mongodb-backup/compare/v1.6.2...v1.6.3) (2025-08-06)
+
+
+### Bug Fixes
+
+* tz ([39db5ed](https://github.com/36node/mongodb-backup/commit/39db5ed4477feb414bfd60fbe208d2138296f355))
+
 ## [1.6.2](https://github.com/36node/mongodb-backup/compare/v1.6.1...v1.6.2) (2025-08-06)
 
 
