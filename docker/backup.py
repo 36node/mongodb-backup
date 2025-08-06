@@ -36,7 +36,6 @@ other_inputs = [
     "S3_REGION",
     "S3_BUCKET",
     "S3_PREFIX",
-    "FEISHU_TOKEN",
 ]
 
 for key in must_inputs:
@@ -93,13 +92,6 @@ s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
 s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
 s3_signature_version = (
     os.environ["S3_SIGNATURE_VERSION"] if check_var("S3_SIGNATURE_VERSION") else None
-)
-
-feishu_notify_token = (
-    os.environ["FEISHU_NOTIFY_TOKEN"] if check_var("FEISHU_NOTIFY_TOKEN") else None
-)
-feishu_notify_title = (
-    os.environ["FEISHU_NOTIFY_TITLE"] if check_var("FEISHU_NOTIFY_TITLE") else None
 )
 
 # 计算当前日期，按照 年月日时分 格式
@@ -245,34 +237,6 @@ def upload_s3(prefix):
             print(f"Deleted s3 old backup files: {keys_to_remove}")
 
 
-def send_feishu_notify(msg):
-    data = {
-        "msg_type": "post",
-        "content": {
-            "post": {
-                "zh_cn": {
-                    "title": f"{feishu_notify_title} mongodb 备份出错",
-                    "content": [
-                        [
-                            {
-                                "tag": "text",
-                                "text": msg,
-                            }
-                        ]
-                    ],
-                }
-            }
-        },
-    }
-    try:
-        requests.post(
-            f"https://open.feishu.cn/open-apis/bot/v2/hook/{feishu_notify_token}",
-            json=data,
-        )
-    except Exception as e:
-        print("Feishu notify error:", e)
-
-
 try:
     if not os.path.exists(backup_path):
         os.makedirs(backup_path)
@@ -300,8 +264,4 @@ try:
 
 except Exception as e:
     print("backup error:", e)
-
-    if feishu_notify_token:
-        send_feishu_notify(f"错误信息: {e}")
-
     sys.exit()

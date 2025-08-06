@@ -152,9 +152,6 @@ S3 支持使用虚拟域名作为 endpoint，即可以将 region 或者 bucket �
 - S3_PREFIX: 选填，要存储的前缀
 - S3_SIGNATURE_VERSION: 选填，签名版本，使用阿里云 oss 时，需要设置为"s3"，minio 无需处理
 
-- FEISHU_NOTIFY_TOKEN: 选填，飞书推送 token，为空时不推送
-- FEISHU_NOTIFY_TITLE: 选填，飞书推送标题，FEISHU_NOTIFY_TOKEN 为空时无效，例如 haiviv cn，此时飞书通知的标题为 `haivivi cn mongodb 备份出错`
-
 ### restore
 
 - S3_ENABLE: 选填，是否从 S3 中进行恢复，true 表示启用
