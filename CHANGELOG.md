@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/36node/mongodb-backup/compare/v1.6.1...v1.6.2) (2025-08-06)
+
+
+### Bug Fixes
+
+* remove feishu requests ([4c31597](https://github.com/36node/mongodb-backup/commit/4c31597a0ece0b626aef760eebcf6871e767d9d6))
+
 ## [1.6.1](https://github.com/36node/mongodb-backup/compare/v1.6.0...v1.6.1) (2025-08-06)
 
 
