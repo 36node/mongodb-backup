@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/36node/mongodb-backup/compare/v1.5.1...v1.6.0) (2025-08-06)
+
+
+### Features
+
+* feishu notify ([c8ad710](https://github.com/36node/mongodb-backup/commit/c8ad7108972aaf110f932fb898ced8ffa30acf3d))
+* update helm-chart ([208530f](https://github.com/36node/mongodb-backup/commit/208530fefb87c97b84caadfb76742a1df4a0f250))
+
+
+### Bug Fixes
+
+* s3 sign ([9849f12](https://github.com/36node/mongodb-backup/commit/9849f120578db001d5ceba551e63b884bc85e6be))
+
 ## [1.5.1](https://github.com/36node/mongodb-backup/compare/v1.5.0...v1.5.1) (2025-08-01)
 
 
