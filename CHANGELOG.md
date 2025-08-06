@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/36node/mongodb-backup/compare/v1.6.0...v1.6.1) (2025-08-06)
+
+
+### Bug Fixes
+
+* update chart version ([ec58e81](https://github.com/36node/mongodb-backup/commit/ec58e819e6a8ada11cf189c81735cf8e290ddf24))
+
 ## [1.6.0](https://github.com/36node/mongodb-backup/compare/v1.5.1...v1.6.0) (2025-08-06)
 
 
