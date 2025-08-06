@@ -66,7 +66,7 @@ s3_bucket = os.environ["S3_BUCKET"] if check_var("S3_BUCKET") else None
 s3_prefix = os.environ["S3_PREFIX"] if check_var("S3_PREFIX") else DEFAULT_S3_PREFIX
 s3_region = os.environ["S3_REGION"] if check_var("S3_REGION") else None
 
-date = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
+date = (datetime.now() + timedelta(hours=8)).strftime("%Y%m%d%H%M%S")
 
 
 def get_files(compiled_regex):
