@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/36node/mongodb-backup/compare/v1.6.4...v1.7.0) (2025-09-01)
+
+
+### Features
+
+* clean enable ([d813dbc](https://github.com/36node/mongodb-backup/commit/d813dbc6e8c5ba62b9672f7a588c2fee186d0911))
+
 ## [1.6.4](https://github.com/36node/mongodb-backup/compare/v1.6.3...v1.6.4) (2025-08-06)
 
 
