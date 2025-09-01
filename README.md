@@ -137,6 +137,7 @@ S3 支持使用虚拟域名作为 endpoint，即可以将 region 或者 bucket �
 
 - MONGO_URI: 必填，uri，例如 `mongodb://root:it_is_a_secret@mongodb-0.mongodb-headless/some-db?authSource=admin`
 - FILE_PREFIX: 选填，备份文件前缀，例如 fcp
+- BACKUP_CLEAN_ENABLE: 选填，开启备份清理，默认为 true 表示启用
 - BACKUP_SAVE_NUMS: 选填，备份保存数量，例如 3，默认保存 3 份
 - MONGO_COLLECTION: 选填，集合名称，不支持多个，例如 gantry，若不为空，则需保证 MONGO_DB 也存在
 - MONGO_EXCLUDE_COLLECTIONS: 选填，忽略的集合名称，支持多个，例如 test1,test2，若不为空，则需保证 MONGO_DB 也存在，且若 MONGO_COLLECTION 不为空，则忽略该参数

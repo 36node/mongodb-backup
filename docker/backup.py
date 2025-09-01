@@ -24,6 +24,7 @@ must_inputs = ["MONGO_URI"]
 other_inputs = [
     "FILE_PREFIX",
     "BACKUP_PATH",
+    "BACKUP_CLEAN_ENABLE",
     "BACKUP_SAVE_NUMS",
     "MONGO_COLLECTION",
     "MONGO_EXCLUDE_COLLECTIONS",
@@ -66,6 +67,9 @@ file_prefix = (
 )
 backup_path = (
     os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
+)
+backup_clean_enable = (
+    check_bool("BACKUP_CLEAN_ENABLE") if check_var("BACKUP_CLEAN_ENABLE") else True
 )
 backup_save_nums = (
     int(os.environ["BACKUP_SAVE_NUMS"])
@@ -214,34 +218,41 @@ def upload_s3(prefix):
     upload_path = f"{s3_prefix}/{file_name}" if s3_prefix else file_name
     client.upload_file(f"{backup_path}/{file_name}", s3_bucket, upload_path)
 
-    # 清理 S3 上的多余备份文件
-    list_prefix = f"{s3_prefix}/" if s3_prefix else ""
-    resp = client.list_objects_v2(Bucket=s3_bucket, Prefix=list_prefix, Delimiter="/")
-    if "Contents" in resp:
-        objects = resp["Contents"]
+    if backup_clean_enable:
+        # 清理 S3 上的多余备份文件
+        list_prefix = f"{s3_prefix}/" if s3_prefix else ""
+        resp = client.list_objects_v2(
+            Bucket=s3_bucket, Prefix=list_prefix, Delimiter="/"
+        )
+        if "Contents" in resp:
+            objects = resp["Contents"]
 
-        file_prefix = f"{list_prefix}{prefix}"
-        # 构造正则表达式
-        regex_pattern = f"^{re.escape(file_prefix)}(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
-        compiled_regex = re.compile(regex_pattern)
-        keys = [
-            object["Key"] for object in objects if compiled_regex.match(object["Key"])
-        ]
+            file_prefix = f"{list_prefix}{prefix}"
+            # 构造正则表达式
+            regex_pattern = (
+                f"^{re.escape(file_prefix)}(\\d{{14}})\\.tar\\.gz(\\.crypt)?$"
+            )
+            compiled_regex = re.compile(regex_pattern)
+            keys = [
+                object["Key"]
+                for object in objects
+                if compiled_regex.match(object["Key"])
+            ]
 
-        # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
-        keys.sort()
+            # 根据文件名排序（这使得最新的备份文件位于列表的末尾）
+            keys.sort()
 
-        # 确定需要删除的文件（保留最后N个文件，这里是backup_save_nums）
-        keys_to_remove = keys[:-backup_save_nums]
+            # 确定需要删除的文件（保留最后N个文件，这里是backup_save_nums）
+            keys_to_remove = keys[:-backup_save_nums]
 
-        # 删除旧的备份文件
-        if keys_to_remove:
-            for key in keys_to_remove:
-                client.delete_object(
-                    Bucket=s3_bucket,
-                    Key=key,
-                )
-            print(f"Deleted s3 old backup files: {keys_to_remove}")
+            # 删除旧的备份文件
+            if keys_to_remove:
+                for key in keys_to_remove:
+                    client.delete_object(
+                        Bucket=s3_bucket,
+                        Key=key,
+                    )
+                print(f"Deleted s3 old backup files: {keys_to_remove}")
 
 
 try:
@@ -259,8 +270,9 @@ try:
     print("backup end")
 
     # 2. 清理备份，保留最近的若干份
-    cleanup_files(final_prefix)
-    print("cleanup end")
+    if backup_clean_enable:
+        cleanup_files(final_prefix)
+        print("cleanup end")
 
     if s3_enable:
         # 3. 将备份文件上传到 S3，并清理 S3 上的多余备份文件
