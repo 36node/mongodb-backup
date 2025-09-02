@@ -161,6 +161,7 @@ S3 支持使用虚拟域名作为 endpoint，即可以将 region 或者 bucket �
 
 - MONGO_URI
 - MONGO_FILE_PREFIX
+- MONGO_DROP: 选填，在集合恢复前移除原有内容
 - BACKUP_LATEST_FILE
 - BACKUP_PWD
 

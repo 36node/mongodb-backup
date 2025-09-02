@@ -17,6 +17,7 @@ DEFAULT_S3_PREFIX = ""
 must_inputs = ["MONGO_URI"]
 other_inputs = [
     "FILE_PREFIX",
+    "MONGO_DROP",
     "BACKUP_PATH",
     "BACKUP_PWD",
     # S3 CONFIG
@@ -52,6 +53,7 @@ def check_bool(key):
 uri = os.environ["MONGO_URI"]
 
 # 选填
+mongo_drop = check_bool("MONGO_DROP") if check_var("MONGO_DROP") else False
 backup_path = (
     os.environ["BACKUP_PATH"] if check_var("BACKUP_PATH") else DEFAULT_BACKUP_PATH
 )
@@ -128,7 +130,11 @@ def restore_file(file_path):
         )
 
     # 恢复数据
-    cmd = f'mongorestore --uri="{uri}" --gzip --archive={restore_path}'
+    other_cmd = "--gzip"
+    if mongo_drop:
+        other_cmd += " --drop"
+
+    cmd = f'mongorestore --uri="{uri}" {other_cmd} --archive={restore_path}'
     subprocess.call(cmd, shell=True)
 
     if is_crypt_file and backup_pwd:
