@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/36node/mongodb-backup/compare/v1.7.0...v1.7.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* restore with drop ([5e9800e](https://github.com/36node/mongodb-backup/commit/5e9800e5ffe38219b33c62024d044f78366e805a))
+
 ## [1.7.0](https://github.com/36node/mongodb-backup/compare/v1.6.4...v1.7.0) (2025-09-01)
 
 
